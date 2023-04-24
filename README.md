@@ -1,4 +1,4 @@
-# Backend project
+# Django API Boilerplate project
 
 1. Use this project as template for creating Backend API services.
 
