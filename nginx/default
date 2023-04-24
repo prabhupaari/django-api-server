@@ -1,0 +1,47 @@
+server {
+   listen 8080 default_server;
+   charset     utf-8;
+
+   location /static/ {
+       alias /var/www/static/;
+   }
+
+   location / {
+       # max upload size
+       proxy_max_temp_file_size 0;
+       uwsgi_max_temp_file_size 0;
+       client_max_body_size 200M;   # adjust to taste
+
+       # timeout
+       uwsgi_read_timeout 6000s;
+       if ($request_method = 'OPTIONS') {
+           add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+           #
+           # Custom headers and headers various browsers *should* be OK with but aren't
+           #
+           add_header 'Access-Control-Allow-Headers' 'Accept,Authorization,Cache-Control,Content-Type,DNT,If-Modified-Since,Keep-Alive,Origin,User-Agent,X-Requested-With' always;
+           #
+           # Tell client that this pre-flight info is valid for 20 days
+           #
+           add_header 'Access-Control-Max-Age' 1728000;
+           add_header 'Access-Control-Allow-Headers' 'Accept,Authorization,Cache-Control,Content-Type,DNT,If-Modified-Since,Keep-Alive,Origin,User-Agent,X-Requested-With' always;
+           add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range';
+       }
+       if ($request_method = 'POST') {
+           #add_header 'Access-Control-Allow-Origin' '*';
+           add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+           add_header 'Access-Control-Allow-Headers' 'Accept,Authorization,Cache-Control,Content-Type,DNT,If-Modified-Since,Keep-Alive,Origin,User-Agent,X-Requested-With' always;
+           add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range';
+       }
+       if ($request_method = 'GET') {
+           #add_header 'Access-Control-Allow-Origin' '*' always;
+           add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+           add_header 'Access-Control-Allow-Headers' 'Accept,Authorization,Cache-Control,Content-Type,DNT,If-Modified-Since,Keep-Alive,Origin,User-Agent,X-Requested-With' always;
+           add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range';
+       }
+
+       root /var/opt;
+       include         uwsgi_params;
+       uwsgi_pass      unix:///server/media/vision.sock;
+   }
+}
